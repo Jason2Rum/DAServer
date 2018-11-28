@@ -169,9 +169,10 @@ router.post('/uploadProfile', profileImg.single("profile"), function(req, res) {
 
 router.get('/alert', function(req, res) {
     let sql = "select uid, location from alert where region=?";
+    let normalSql = "select uid, location from normal where region=?";
+    let data = [];
     sql_query(sql, req.query.region)
         .then(result => {
-            let data = [];
             result.forEach(itm => {
                 let location = itm.location;
                 let tmp = location.split(',');
@@ -180,7 +181,31 @@ router.get('/alert', function(req, res) {
                 let item = {
                     'uid': itm.uid,
                     'longitude': longitude,
-                    'latitude': latitude
+                    'latitude': latitude,
+                    'tag': 1
+                };
+                data.push(item);
+            });
+
+        })
+        .catch(err => {
+            res.send(JSON.stringify({
+                'resultcode': 0,
+                'msg': err.message
+            }));
+        });
+    sql_query(normalSql, req.query.region)
+        .then(result => {
+            result.forEach(itm => {
+                let location = itm.location;
+                let tmp = location.split(',');
+                let longitude = tmp[4];
+                let latitude = tmp[2];
+                let item = {
+                    'uid': itm.uid,
+                    'longitude': longitude,
+                    'latitude': latitude,
+                    'tag': 0
                 };
                 data.push(item);
             });
@@ -196,6 +221,8 @@ router.get('/alert', function(req, res) {
                 'msg': err.message
             }));
         });
+
+
 });
 
 router.get('/recommend', function(req, res) {
